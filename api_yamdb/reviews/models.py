@@ -1,5 +1,8 @@
+# Не забыть отсортировать импорты!
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 User = get_user_model()
 
@@ -38,18 +41,65 @@ class Genre(models.Model):
         return self.title
 
 
+class Title(models.Model):
+    """Это - фильмы с годом их выпуска и категорией произведения"""
+    def get_deleted_user(self):
+        return User.objects.get_or_create(username="deleted")[0]
+
+    name = models.CharField(max_length=50,
+                            verbose_name='Название фильма')
+    # Подумать над тем, как сделать валидатор реального года!
+    year = models.IntegerField()
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET(get_deleted_user),
+        related_name='titles'
+    )
+
+    class Meta:
+        verbose_name = 'Фильм'
+        verbose_name_plural = 'Фильмы'
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class Genre_Title(models.Model):
+    """Это - таблица многие ко многим, связывающая Genre и Title"""
+    title_id = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='titles'
+    )
+    genre_id = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        related_name='genres'
+    )
+
+    class Meta:
+        verbose_name = 'Жанр-Фильм'
+        verbose_name_plural = 'Жанр-Фильм'
+
+    def __str__(self) -> str:
+        return self.title
+
+
 class Review(models.Model):
     """Это - ревью к произведению"""
+    def get_deleted_user(self):
+        return User.objects.get_or_create(username="deleted")[0]
+
     title_id = models.ForeignKey(
-        Title, #Добавить модель Title на которую здесь сошлёмся!
+        Title,
         on_delete=models.CASCADE,
         related_name='rewievs'
     )
     text = models.TextField()
     authtor = models.ForeignKey(
-        #Здесь при удалении автора я хочу оставить его комментарии, как сделать?
-        User, on_delete=models.SET_DEFAULT, related_name='rewievs')
-    score = models.IntegerField()
+        User, on_delete=models.SET(get_deleted_user), related_name='rewievs')
+    score = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(10)])
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
@@ -66,6 +116,9 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Это - комментарии к ревью фильма"""
+    def get_deleted_user(self):
+        return User.objects.get_or_create(username="deleted")[0]
+
     review_id = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
@@ -73,8 +126,7 @@ class Comment(models.Model):
     )
     text = models.TextField()
     authtor = models.ForeignKey(
-        #Здесь при удалении автора я хочу оставить его комментарии, как сделать?
-        User, on_delete=models.SET_DEFAULT, related_name='comments')
+        User, on_delete=models.SET(get_deleted_user), related_name='comments')
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
