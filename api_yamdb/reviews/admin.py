@@ -50,9 +50,9 @@ class TitleAdmin(admin.ModelAdmin):
                      'year',)
 
 
-admin.site.register(Category)
-admin.site.register(Genre)
-admin.site.register(Title)
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Genre, CommentAdmin)
+admin.site.register(Title, GenreAdmin)
 admin.site.register(Genre_Title)
-admin.site.register(Review)
-admin.site.register(Comment)
+admin.site.register(Review, ReviewAdmin)
+admin.site.register(Comment, TitleAdmin)

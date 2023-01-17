@@ -21,7 +21,7 @@ class Category(models.Model):
         verbose_name_plural = 'Категории произведений'
 
     def __str__(self) -> str:
-        return self.title
+        return self.name
 
 
 class Genre(models.Model):
@@ -38,7 +38,7 @@ class Genre(models.Model):
         verbose_name_plural = 'Жанры'
 
     def __str__(self) -> str:
-        return self.title
+        return self.name
 
 
 class Title(models.Model):
@@ -61,7 +61,7 @@ class Title(models.Model):
         verbose_name_plural = 'Фильмы'
 
     def __str__(self) -> str:
-        return self.title
+        return self.name
 
 
 class Genre_Title(models.Model):
@@ -82,7 +82,7 @@ class Genre_Title(models.Model):
         verbose_name_plural = 'Жанр-Фильм'
 
     def __str__(self) -> str:
-        return self.title
+        return self.name
 
 
 class Review(models.Model):
