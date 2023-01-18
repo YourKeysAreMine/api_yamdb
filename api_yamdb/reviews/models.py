@@ -4,14 +4,14 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-User = get_user_model()
+from .validators import validate_year
+from users.models import User
 
 
 class Category(models.Model):
     """Это - категории произведений: Фильм, Книга, Музыка и.т.п."""
     name = models.CharField(max_length=50,
-                            verbose_name='Наименование категории',
-                            unique=True)
+                            verbose_name='Наименование категории')
     slug = models.SlugField(max_length=15,
                             unique=True,
                             verbose_name='Название в адресной строке')
@@ -48,14 +48,16 @@ class Title(models.Model):
 
     name = models.CharField(max_length=50,
                             verbose_name='Название фильма')
-    # Подумать над тем, как сделать валидатор реального года!
-    year = models.IntegerField()
+    year = models.IntegerField(
+        verbose_name='Год создания',
+        db_index=True,
+        validators=[validate_year]
+    )
     category = models.ForeignKey(
         Category,
         # ПОМЕНЯТЬ НА ЭТАПЕ ПАЙТЕСТА, ЕСЛИ ЧТО!
         on_delete=models.SET(get_deleted_user),
         related_name='categories',
-        unique=True,
     )
 
     class Meta:
@@ -100,10 +102,10 @@ class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
         # ПОМЕНЯТЬ НА ЭТАПЕ ПАЙТЕСТА, ЕСЛИ ЧТО!
-        User, on_delete=models.SET(get_deleted_user), related_name='authors')
+        User, on_delete=models.SET(get_deleted_user), related_name='reviews')
     score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
-        related_name='Оценка')
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
@@ -130,7 +132,8 @@ class Comment(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.SET(get_deleted_user), related_name='authors')
+        User, on_delete=models.SET(get_deleted_user), related_name='comments'
+    )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:

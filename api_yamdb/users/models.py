@@ -13,9 +13,23 @@ class User(AbstractUser):
         (MODERATOR, 'Модератор'),
         (ADMIN, 'Администратор'),
     ]
-    email = models.EmailField(
-        max_length=200,
+    username = models.CharField(
+        max_length=150,
         unique=True,
+    )
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+    )
+    first_name = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name='имя пользователя'
+    )
+    last_name = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name='фамилия пользователя'
     )
     bio = models.TextField(
         verbose_name='Биография',
@@ -23,12 +37,12 @@ class User(AbstractUser):
     )
     role = models.CharField(
         verbose_name='Роль пользователя',
-        max_length=20,
+        max_length=25,
         choices=USER_ROLES,
         default='user',
     )
     confirmation_code = models.CharField(
-        max_length=150,
+        max_length=250,
     )
 
     @property
