@@ -1,6 +1,3 @@
-# Не забыть отсортировать импорты!
-
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -10,9 +7,9 @@ from users.models import User
 
 class Category(models.Model):
     """Это - категории произведений: Фильм, Книга, Музыка и.т.п."""
-    name = models.CharField(max_length=50,
+    name = models.CharField(max_length=256,
                             verbose_name='Наименование категории')
-    slug = models.SlugField(max_length=15,
+    slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='Название в адресной строке')
 
@@ -26,10 +23,10 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Это - наименование жанра произведения"""
-    name = models.CharField(max_length=50,
+    name = models.CharField(max_length=256,
                             verbose_name='Жанр',
                             unique=True)
-    slug = models.SlugField(max_length=25,
+    slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='Название жанра в адресной строке')
 
@@ -46,7 +43,7 @@ class Title(models.Model):
     def get_deleted_user(self):
         return User.objects.get_or_create(username="deleted")[0]
 
-    name = models.CharField(max_length=50,
+    name = models.CharField(max_length=256,
                             verbose_name='Название фильма')
     year = models.IntegerField(
         verbose_name='Год создания',
