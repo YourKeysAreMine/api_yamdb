@@ -88,11 +88,11 @@ class Genre_Title(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Жанр-Произведение'
-        verbose_name_plural = 'Жанр-Произведение'
+        verbose_name = 'Жанр: Произведение'
+        verbose_name_plural = 'Жанр: Произведение'
 
     def __str__(self):
-        return str(self.title)
+        return f'{str(self.genre)}: {str(self.title)}'
 
 
 class Review(models.Model):
@@ -108,7 +108,10 @@ class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
         # ПОМЕНЯТЬ НА ЭТАПЕ ПАЙТЕСТА, ЕСЛИ ЧТО!
-        User, on_delete=models.SET(get_deleted_user), related_name='reviews')
+        User,
+        on_delete=models.SET(get_deleted_user),
+        related_name='reviews'
+    )
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
