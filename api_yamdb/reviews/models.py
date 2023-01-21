@@ -1,5 +1,3 @@
-# Не забыть отсортировать импорты!
-
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -9,9 +7,9 @@ from users.models import User
 
 class Category(models.Model):
     """Это - категории произведений: Фильм, Книга, Музыка и.т.п."""
-    name = models.CharField(max_length=50,
+    name = models.CharField(max_length=256,
                             verbose_name='Наименование категории')
-    slug = models.SlugField(max_length=15,
+    slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='Название в адресной строке')
 
@@ -25,10 +23,10 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Это - наименование жанра произведения"""
-    name = models.CharField(max_length=50,
+    name = models.CharField(max_length=256,
                             verbose_name='Жанр',
                             unique=True)
-    slug = models.SlugField(max_length=25,
+    slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='Название жанра в адресной строке')
 
@@ -45,7 +43,7 @@ class Title(models.Model):
     def get_deleted_user(self):
         return User.objects.get_or_create(username="deleted")[0]
 
-    name = models.CharField(max_length=50,
+    name = models.CharField(max_length=256,
                             verbose_name='Название фильма')
     year = models.IntegerField(
         verbose_name='Год создания',
@@ -59,7 +57,7 @@ class Title(models.Model):
         related_name='categories',
     )
     genre = models.ManyToManyField(
-        'Genre',
+        Genre,
         through='Genre_Title',
         related_name='titles'
     )
@@ -78,20 +76,23 @@ class Title(models.Model):
 
 class Genre_Title(models.Model):
     """Это - таблица многие ко многим, связывающая Genre и Title"""
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='titles'
     )
-    genre_id = models.ForeignKey(
+    genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
         related_name='genres'
     )
 
     class Meta:
-        verbose_name = 'Жанр-Произведение'
-        verbose_name_plural = 'Жанр-Произведение'
+        verbose_name = 'Жанр: Произведение'
+        verbose_name_plural = 'Жанр: Произведение'
+
+    def __str__(self):
+        return f'{str(self.genre)}: {str(self.title)}'
 
 
 class Review(models.Model):
@@ -99,7 +100,7 @@ class Review(models.Model):
     def get_deleted_user(self):
         return User.objects.get_or_create(username="deleted")[0]
 
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='reviews'
@@ -120,7 +121,7 @@ class Review(models.Model):
         verbose_name = 'Ревью'
         verbose_name_plural = 'Ревью'
         constraints = [
-            models.UniqueConstraint(fields=['title_id', 'author'],
+            models.UniqueConstraint(fields=['title', 'author'],
                                     name='unique_review'),
         ]
 
@@ -133,7 +134,7 @@ class Comment(models.Model):
     def get_deleted_user(self):
         return User.objects.get_or_create(username="deleted")[0]
 
-    review_id = models.ForeignKey(
+    review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         related_name='comments'

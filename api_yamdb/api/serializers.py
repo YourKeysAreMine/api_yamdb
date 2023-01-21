@@ -1,7 +1,13 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
-from reviews.models import Comment, Review, Title, Category, Genre
+from reviews.models import (Comment, 
+                            Review, 
+                            Title, 
+                            Category, 
+                            Genre, 
+                            Category, 
+                            User)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -88,3 +94,24 @@ class TitlePOSTSerializer(TitleGETSerializer):
 
     class Meta(TitleGETSerializer.Meta):
         pass
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genre
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('email', 'username')
+        model = User
