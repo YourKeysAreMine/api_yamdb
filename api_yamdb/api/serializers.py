@@ -95,7 +95,18 @@ class TitlePOSTSerializer(TitleGETSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    email = serializers.EmailField()
 
     class Meta:
         fields = ('email', 'username')
+        model = User
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        fields = ('username', 'confirmation_code')
         model = User
