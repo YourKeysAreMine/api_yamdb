@@ -1,14 +1,16 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters, views
+from rest_framework import viewsets, filters, views, status
 
-from reviews.models import Title, Review, Genre, Category
+from reviews.models import Title, Review, Genre, Category, User
 from api.serializers import (CommentSerializer,
                              ReviewSerializer,
                              TitlePOSTSerializer,
                              TitleGETSerializer,
                              GenreSerializer,
-                             CategorySerializer)
+                             CategorySerializer,
+                             RegistrationSerializer,
+                             TokenSerializer,)
 from api.permissions import (IsAdmin,
                              IsModerator,
                              IsAuthor,
@@ -19,6 +21,9 @@ from api.filters import TitleFilter
 import random
 import string
 from django.core.mail import send_mail
+from rest_framework.response import Response
+from django.conf import settings
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -104,15 +109,48 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
-# class RegistrationView(views.APIView):
+class RegistrationView(views.APIView):
 
-    # def send_confirmation_code(self, email, user):
-        # confirmation_code = ''.join(
-            # random.choices(string.ascii_uppercase + string.ascii_lowercase, k=10))
-        # send_mail(
-            # subject='Yamdb! Код регистрации для получения JWT-токена',
-            # message=f''
-        # )
+    def send_confirmation_code(self, email):
+        confirmation_code = ''.join(
+            random.choices(string.ascii_uppercase + string.ascii_lowercase,
+                           k=10))
+        send_mail(
+            subject='Yamdb! Код регистрации для получения JWT-токена',
+            message=f'Ваш код подтверждения: {confirmation_code}!',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+        )
+        return confirmation_code
 
-    # def post(self, request):
-        # pass
+    def post(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+        serializer.is_valid()
+        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
+        User.objects.get_or_create(username=username, email=email)
+        confirmation_code = self.send_confirmation_code(email)
+        User.objects.filter(email=email).update(
+            confirmation_code=confirmation_code)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TokenView(views.APIView):
+
+    def get_tokens_for_user(self, user):
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            'access': str(refresh.access_token),
+        }
+
+    def post(self, request):
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid()
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+        user = get_object_or_404(User, username=username)
+        if confirmation_code == user.confirmation_code:
+            token = self.get_tokens_for_user(user)
+            return Response(token, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
