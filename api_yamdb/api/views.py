@@ -3,11 +3,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, views
 
 from reviews.models import Title, Review, Genre, Category
-from api.serializers import (CommentSerializer, 
-                             ReviewSerializer, 
-                             TitlePOSTSerializer, 
-                             TitleGETSerializer, 
-                             GenreSerializer, 
+from api.serializers import (CommentSerializer,
+                             ReviewSerializer,
+                             TitlePOSTSerializer,
+                             TitleGETSerializer,
+                             GenreSerializer,
                              CategorySerializer)
 from api.permissions import (IsAdmin,
                              IsModerator,
@@ -24,11 +24,11 @@ from django.core.mail import send_mail
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        IsAdmin |
-        IsModerator |
-        IsAuthor |
-        ReadOnly |
-        IsAuthenticatedAndPOSTrequest,
+        IsAdmin
+        | IsModerator
+        | IsAuthor
+        | ReadOnly
+        | IsAuthenticatedAndPOSTrequest,
     )
 
     def get_review(self, key):
@@ -49,11 +49,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
-        IsAdmin |
-        IsModerator |
-        IsAuthor |
-        ReadOnly |
-        IsAuthenticatedAndPOSTrequest,
+        IsAdmin
+        | IsModerator
+        | IsAuthor
+        | ReadOnly
+        | IsAuthenticatedAndPOSTrequest,
     )
 
     def get_title(self, key):
@@ -104,15 +104,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
-class RegistrationView(views.APIView):
+# class RegistrationView(views.APIView):
 
-    def send_confirmation_code(self, email, user):
-        confirmation_code = ''.join(
-            random.choices(string.ascii_uppercase + string.ascii_lowercase, k=10))
-        send_mail(
-            subject='Yamdb! Код регистрации для получения JWT-токена',
-            message=f''
-        )
+    # def send_confirmation_code(self, email, user):
+        # confirmation_code = ''.join(
+            # random.choices(string.ascii_uppercase + string.ascii_lowercase, k=10))
+        # send_mail(
+            # subject='Yamdb! Код регистрации для получения JWT-токена',
+            # message=f''
+        # )
 
-    def post(self, request):
-        pass
+    # def post(self, request):
+        # pass
