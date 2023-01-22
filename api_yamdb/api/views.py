@@ -24,17 +24,18 @@ from django.core.mail import send_mail
 from rest_framework.response import Response
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (
+    permission_classes = [
         IsAdmin
         | IsModerator
         | IsAuthor
         | ReadOnly
-        | IsAuthenticatedAndPOSTrequest,
-    )
+        | IsAuthenticatedAndPOSTrequest
+    ]
 
     def get_review(self, key):
         review_id = self.kwargs.get(key)
@@ -53,13 +54,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (
+    permission_classes = [
         IsAdmin
         | IsModerator
         | IsAuthor
         | ReadOnly
-        | IsAuthenticatedAndPOSTrequest,
-    )
+        | IsAuthenticatedAndPOSTrequest
+    ]
 
     def get_title(self, key):
         title_id = self.kwargs.get(key)
@@ -78,7 +79,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = (IsAdmin | ReadOnly,)
+    permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -93,7 +94,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete']
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # Добавить пермишены.
+    permission_classes = [IsAdmin | ReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
@@ -103,13 +104,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete']
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # Добавить пермишены.
+    permission_classes = [IsAdmin | ReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
 
 
 class RegistrationView(views.APIView):
+    permission_classes = [AllowAny]
 
     def send_confirmation_code(self, email):
         confirmation_code = ''.join(
@@ -125,17 +127,19 @@ class RegistrationView(views.APIView):
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-        serializer.is_valid()
-        username = serializer.validated_data['username']
-        email = serializer.validated_data['email']
-        User.objects.get_or_create(username=username, email=email)
-        confirmation_code = self.send_confirmation_code(email)
-        User.objects.filter(email=email).update(
-            confirmation_code=confirmation_code)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            username = serializer.data['username']
+            email = serializer.data['email']
+            User.objects.get_or_create(username=username, email=email)
+            confirmation_code = self.send_confirmation_code(email)
+            User.objects.filter(email=email).update(
+                confirmation_code=confirmation_code)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TokenView(views.APIView):
+    permission_classes = [AllowAny]
 
     def get_tokens_for_user(self, user):
         refresh = RefreshToken.for_user(user)
@@ -146,11 +150,11 @@ class TokenView(views.APIView):
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
-        serializer.is_valid()
-        username = serializer.validated_data['username']
-        confirmation_code = serializer.validated_data['confirmation_code']
-        user = get_object_or_404(User, username=username)
-        if confirmation_code == user.confirmation_code:
-            token = self.get_tokens_for_user(user)
-            return Response(token, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            username = serializer.data['username']
+            confirmation_code = serializer.data['confirmation_code']
+            user = get_object_or_404(User, username=username)
+            if confirmation_code == user.confirmation_code:
+                token = self.get_tokens_for_user(user)
+                return Response(token, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
