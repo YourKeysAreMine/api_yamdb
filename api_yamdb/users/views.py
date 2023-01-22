@@ -18,6 +18,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
 
+
     @action(
         methods=['GET', 'PATCH'],
         detail=False,

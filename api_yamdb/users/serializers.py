@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
 # from django.core.exceptions import ValidationError
 # from rest_framework.response import Response
 # from rest_framework import status
@@ -20,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         # validatiors=[
             # UniqueValidator(queryset=User.objects.all())
         # ]
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
     class Meta:
