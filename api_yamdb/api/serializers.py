@@ -1,6 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
-# from users.validators import validate_name, validate_unique_mail
+from users.validators import validate_name
 
 from reviews.models import (Comment,
                             Review,
@@ -101,14 +101,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         max_length=150,
         regex=r"^[^\W\d]\w*$",
         validators=[
-            # validate_name,
+            validate_name,
         ]
     )
     email = serializers.EmailField(
         max_length=254,
-        validators=[
-            # validate_unique_mail,
-        ]
     )
 
     class Meta:

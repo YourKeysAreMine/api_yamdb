@@ -2,7 +2,8 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, views, status
 
-from reviews.models import Title, Review, Genre, Category, User
+from reviews.models import Title, Review, Genre, Category
+from users.models import User
 from api.serializers import (CommentSerializer,
                              ReviewSerializer,
                              TitlePOSTSerializer,
@@ -12,10 +13,8 @@ from api.serializers import (CommentSerializer,
                              RegistrationSerializer,
                              TokenSerializer,)
 from api.permissions import (IsAdmin,
-                             IsModerator,
-                             IsAuthor,
                              ReadOnly,
-                             IsAuthenticatedAndPOSTrequest)
+                             CommentPermission)
 
 from api.filters import TitleFilter
 import random
@@ -30,13 +29,7 @@ from rest_framework import mixins
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [
-        IsAdmin
-        | IsModerator
-        | IsAuthor
-        | ReadOnly
-        | IsAuthenticatedAndPOSTrequest
-    ]
+    permission_classes = [CommentPermission]
 
     def get_review(self, key):
         review_id = self.kwargs.get(key)
@@ -55,13 +48,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [
-        IsAdmin
-        | IsModerator
-        | IsAuthor
-        | ReadOnly
-        | IsAuthenticatedAndPOSTrequest
-    ]
+    permission_classes = [CommentPermission]
 
     def get_title(self, key):
         title_id = self.kwargs.get(key)
@@ -83,7 +70,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    # http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DEL'):
@@ -135,6 +121,16 @@ class RegistrationView(views.APIView):
         if serializer.is_valid():
             username = serializer.data['username']
             email = serializer.data['email']
+            if User.objects.filter(
+                email=email).exists() and not User.objects.filter(
+                    username=username).exists():
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
+            if User.objects.filter(
+                    username=username).exists() and not User.objects.filter(
+                        email=email).exists():
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
             User.objects.get_or_create(username=username, email=email)
             confirmation_code = self.send_confirmation_code(email)
             User.objects.filter(email=email).update(

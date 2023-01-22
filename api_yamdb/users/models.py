@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from .validators import validate_name
 
 
 class User(AbstractUser):
@@ -17,7 +16,6 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
-        validators=[validate_name]
     )
     email = models.EmailField(
         max_length=254,
@@ -62,9 +60,6 @@ class User(AbstractUser):
     def is_user(self):
         """Проверка на наличие стандартных прав."""
         return self.role == self.USER
-
-    class Meta:
-        ordering = ('username',)
 
     def __str__(self):
         return self.username

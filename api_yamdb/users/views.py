@@ -37,3 +37,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+        # if request.method == 'POST':
+            # serializer = UserSerializer(request.user)
+            # username = serializer.data['username']
+            # email = serializer.data['email']
+            # if User.objects.filter(username=username).exists() and User.objects.filter(email=email).exists():
+                # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # if serializer.is_valid():
+                # return Response(serializer.data, status=status.HTTP_200_OK)
