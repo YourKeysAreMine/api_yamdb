@@ -10,6 +10,7 @@ from .serializers import UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
