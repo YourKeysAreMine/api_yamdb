@@ -1,30 +1,23 @@
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters, views, status
-
-from reviews.models import Title, Review, Genre, Category
-from users.models import User
-from api.serializers import (CommentSerializer,
-                             ReviewSerializer,
-                             TitlePOSTSerializer,
-                             TitleGETSerializer,
-                             GenreSerializer,
-                             CategorySerializer,
-                             RegistrationSerializer,
-                             TokenSerializer,)
-from api.permissions import (IsAdmin,
-                             ReadOnly,
-                             CommentPermission)
-
-from api.filters import TitleFilter
 import random
 import string
-from django.core.mail import send_mail
-from rest_framework.response import Response
+
 from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+
+from api.filters import TitleFilter
+from api.permissions import CommentPermission, IsAdmin, ReadOnly
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             GenreSerializer, RegistrationSerializer,
+                             ReviewSerializer, TitleGETSerializer,
+                             TitlePOSTSerializer, TokenSerializer)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, status, views, viewsets
 from rest_framework.permissions import AllowAny
-from rest_framework import mixins
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import Category, Genre, Review, Title
+from users.models import User
 
 
 class CommentViewSet(viewsets.ModelViewSet):

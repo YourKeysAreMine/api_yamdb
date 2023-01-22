@@ -1,14 +1,8 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
-from rest_framework import serializers
-from users.validators import validate_name
 
-from reviews.models import (Comment,
-                            Review,
-                            Title,
-                            Category,
-                            Genre,
-                            Category,
-                            User)
+from rest_framework import serializers
+from reviews.models import Category, Comment, Genre, Review, Title, User
+from users.validators import validate_name
 
 
 class CategorySerializer(serializers.ModelSerializer):

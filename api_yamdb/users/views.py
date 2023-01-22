@@ -1,10 +1,10 @@
-from rest_framework import viewsets, status
+from api.permissions import IsAdmin
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.permissions import IsAdmin
 from .models import User
 from .serializers import UserSerializer
 
@@ -17,7 +17,6 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdmin,)
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
-
 
     @action(
         methods=['GET', 'PATCH'],
@@ -38,12 +37,3 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-
-        # if request.method == 'POST':
-            # serializer = UserSerializer(request.user)
-            # username = serializer.data['username']
-            # email = serializer.data['email']
-            # if User.objects.filter(username=username).exists() and User.objects.filter(email=email).exists():
-                # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # if serializer.is_valid():
-                # return Response(serializer.data, status=status.HTTP_200_OK)

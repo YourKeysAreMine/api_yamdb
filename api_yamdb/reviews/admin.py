@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Category, Genre, Title, Genre_Title, Review, Comment
+
+from .models import Category, Comment, Genre, Genre_Title, Review, Title
 
 
 class GenreInline(admin.TabularInline):
