@@ -96,9 +96,10 @@ class TitlePOSTSerializer(TitleGETSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
+    username = serializers.RegexField(
         required=True,
         max_length=150,
+        regex=r"^[^\W\d]\w*$",
         validators=[
             # validate_name,
         ]
