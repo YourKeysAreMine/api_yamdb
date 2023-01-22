@@ -43,6 +43,7 @@ class User(AbstractUser):
     )
     confirmation_code = models.CharField(
         max_length=250,
+        blank=True,
     )
 
     @property
@@ -60,8 +61,5 @@ class User(AbstractUser):
         """Проверка на наличие стандартных прав."""
         return self.role == self.USER
 
-    class Meta:
-        ordering = ('username',)
-
-        def __str__(self):
-            return self.username
+    def __str__(self):
+        return self.username
