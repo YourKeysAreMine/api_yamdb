@@ -6,7 +6,10 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from api.filters import TitleFilter
-from api.permissions import CommentPermission, IsAdmin, ReadOnly
+from api.permissions import (IsAdmin,
+                             ReadOnly,
+                             IsAuthorOrReadOnly,
+                             IsModerator)
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, RegistrationSerializer,
                              ReviewSerializer, TitleGETSerializer,
@@ -22,7 +25,9 @@ from users.models import User
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [CommentPermission]
+    permission_classes = [IsAdmin
+                          | IsAuthorOrReadOnly
+                          | IsModerator]
 
     def get_review(self, key):
         review_id = self.kwargs.get(key)
@@ -41,7 +46,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [CommentPermission]
+    permission_classes = [IsAdmin
+                          | IsAuthorOrReadOnly
+                          | IsModerator]
 
     def get_title(self, key):
         title_id = self.kwargs.get(key)
