@@ -41,8 +41,6 @@ class Genre(models.Model):
 
 class Title(models.Model):
     """Это - произведения с годом их выпуска и категорией произведения"""
-    def get_deleted_user(self):
-        return User.objects.get_or_create(username="deleted")[0]
 
     name = models.CharField(max_length=256,
                             verbose_name='Название фильма')
@@ -53,18 +51,20 @@ class Title(models.Model):
     )
     category = models.ForeignKey(
         Category,
-        # ПОМЕНЯТЬ НА ЭТАПЕ ПАЙТЕСТА, ЕСЛИ ЧТО!
-        on_delete=models.SET(get_deleted_user),
+        on_delete=models.SET("deleted"),
         related_name='categories',
+        verbose_name='Категория произведения',
     )
     genre = models.ManyToManyField(
         Genre,
-        through='Genre_Title',
-        related_name='titles'
+        through='GenreTitle',
+        related_name='titles',
+        verbose_name='Жанр',
     )
     description = models.TextField(
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Описание',
     )
 
     class Meta:
@@ -75,17 +75,19 @@ class Title(models.Model):
         return self.name
 
 
-class Genre_Title(models.Model):
+class GenreTitle(models.Model):
     """Это - таблица многие ко многим, связывающая Genre и Title"""
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='titles'
+        related_name='titles',
+        verbose_name='Название произведения',
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        related_name='genres'
+        related_name='genres',
+        verbose_name='Жанр',
     )
 
     class Meta:
@@ -98,22 +100,25 @@ class Genre_Title(models.Model):
 
 class Review(models.Model):
     """Это - ревью к произведению"""
-    def get_deleted_user(self):
-        return User.objects.get_or_create(username="deleted")[0]
 
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='Название произведения',
     )
-    text = models.TextField()
+    text = models.TextField(
+        verbose_name='Текст ревью',
+    )
     author = models.ForeignKey(
         User,
-        on_delete=models.SET(get_deleted_user),
-        related_name='reviews'
+        on_delete=models.SET("deleted"),
+        related_name='reviews',
+        verbose_name='Автор ревью',
     )
-    score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    score = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name='Оценка',
     )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
@@ -131,8 +136,6 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Это - комментарии к ревью фильма"""
-    def get_deleted_user(self):
-        return User.objects.get_or_create(username="deleted")[0]
 
     review = models.ForeignKey(
         Review,
@@ -141,7 +144,7 @@ class Comment(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.SET(get_deleted_user), related_name='comments'
+        User, on_delete=models.SET("deleted"), related_name='comments'
     )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
