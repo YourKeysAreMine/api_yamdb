@@ -4,10 +4,9 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 
 from api.filters import TitleFilter
-from api.permissions import (IsAdmin,
-                             ReadOnly,
-                             IsAuthorOrReadOnly,
-                             IsModerator)
+from api.permissions import (IsAuthorAdminModeratorOrReadOnly,
+                             IsAdminOrReadOnly,
+                             )
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, RegistrationSerializer,
                              ReviewSerializer, TitleGETSerializer,
@@ -24,9 +23,7 @@ from api.confirmation_code import generate_confirmation_code
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsAdmin
-                          | IsAuthorOrReadOnly
-                          | IsModerator]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
 
     def get_review(self, key):
         review_id = self.kwargs.get(key)
@@ -45,9 +42,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAdmin
-                          | IsAuthorOrReadOnly
-                          | IsModerator]
+    permission_classes = [IsAuthorAdminModeratorOrReadOnly]
 
     def get_title(self, key):
         title_id = self.kwargs.get(key)
@@ -66,7 +61,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
-    permission_classes = [IsAdmin | ReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -82,7 +77,7 @@ class GenreViewSet(mixins.ListModelMixin,
                    viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdmin | ReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
@@ -94,7 +89,7 @@ class CategoryViewSet(mixins.ListModelMixin,
                       viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdmin | ReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
@@ -104,9 +99,7 @@ class RegistrationView(views.APIView):
     permission_classes = [AllowAny]
 
     def send_confirmation_code(self, email):
-
         confirmation_code = generate_confirmation_code()
-
         send_mail(
             subject='Yamdb! Код регистрации для получения JWT-токена',
             message=f'Ваш код подтверждения: {confirmation_code}!',
