@@ -1,9 +1,7 @@
-import random
-import string
-
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 
 from api.filters import TitleFilter
 from api.permissions import (IsAdmin,
@@ -21,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+from api.confirmation_code import generate_confirmation_code
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -66,7 +65,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -105,9 +104,9 @@ class RegistrationView(views.APIView):
     permission_classes = [AllowAny]
 
     def send_confirmation_code(self, email):
-        confirmation_code = ''.join(
-            random.choices(string.ascii_uppercase + string.ascii_lowercase,
-                           k=10))
+
+        confirmation_code = generate_confirmation_code()
+
         send_mail(
             subject='Yamdb! Код регистрации для получения JWT-токена',
             message=f'Ваш код подтверждения: {confirmation_code}!',
@@ -121,20 +120,11 @@ class RegistrationView(views.APIView):
         if serializer.is_valid():
             username = serializer.data['username']
             email = serializer.data['email']
-            if User.objects.filter(
-                email=email).exists() and not User.objects.filter(
-                    username=username).exists():
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
-            if User.objects.filter(
-                    username=username).exists() and not User.objects.filter(
-                        email=email).exists():
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
-            User.objects.get_or_create(username=username, email=email)
+            user, _ = User.objects.get_or_create(username=username,
+                                                 email=email)
             confirmation_code = self.send_confirmation_code(email)
-            User.objects.filter(email=email).update(
-                confirmation_code=confirmation_code)
+            user.confirmation_code = confirmation_code
+            user.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

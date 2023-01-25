@@ -56,14 +56,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class TitleGETSerializer(serializers.ModelSerializer):
 
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
     genre = GenreSerializer(many=True)
     category = CategorySerializer(many=False)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
+        fields = '__all__'
 
     def get_rating(self, obj):
         reviews = Review.objects.filter(title_id=obj.id)
@@ -101,6 +100,19 @@ class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         max_length=254,
     )
+
+    def validate(self, data):
+        if User.objects.filter(
+                email=data['email']).exists() and User.objects.filter(
+                username=data['username']).exists():
+            return data
+        if User.objects.filter(
+                email=data['email']).exists():
+            raise serializers.ValidationError("status.HTTP_400_BAD_REQUEST")
+        if User.objects.filter(
+                username=data['username']).exists():
+            raise serializers.ValidationError("status.HTTP_400_BAD_REQUEST")
+        return data
 
     class Meta:
         fields = ('email', 'username')
