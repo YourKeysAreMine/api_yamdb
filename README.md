@@ -44,9 +44,9 @@ python manage.py runserver
 .../genres - получение и создания списка жанров.
 
 ### Авторы
-Закиров Сергей
-bifrostcmd
-VldslMr
+- Закиров Сергей
+- bifrostcmd
+- VldslMr
 
 ### License
 MIT
